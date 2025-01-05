@@ -121,4 +121,5 @@ s_cols = [None if x == "_" else int(x) for x in sys.argv[2].split(",")]
 sol = solve(s_rows, s_cols)
 
 print(f"found {len(sol)} solutions")
-print(sol)
+for r, c in sol:
+    print(",".join(str(i) for i in c), "|", "".join(r))
