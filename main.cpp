@@ -55,17 +55,6 @@ constexpr uint64_t board_set_col(uint64_t b, int col, uint8_t val) {
     return (b & mask) | newval;
 }
 
-/*
-constexpr uint64_t setbits_set_col(uint64_t x, uint8_t stickid, uint8_t col) {
-    uint64_t mask = s2tv[stickid] << col;
-    return x | mask;
-}
-constexpr uint64_t setbits_set_row(uint64_t x, uint8_t stickid, uint8_t row) {
-    uint64_t mask = s2v[stickid] << row * 5;
-    return x | mask;
-} */
-
-
 constexpr bool row_interferes_with(uint64_t b, uint8_t row, uint8_t stick, uint8_t col) {
     uint8_t r = board_get_row(b, row);
     if(!r)
@@ -111,6 +100,7 @@ void solve(uint64_t board, uint16_t avail) {
         return;
     }
     visited.insert(board);
+
     if(avail == 0) {
         solutions.insert(board);
         return;
@@ -118,7 +108,6 @@ void solve(uint64_t board, uint16_t avail) {
 
     for(uint8_t stickidx = 1; stickidx <= 19; stickidx++) {
         uint16_t psa = (stickidx + 1) / 2;
-
         uint16_t stickmask = 1u << psa;
         if(!(avail & stickmask)) {
             continue;
@@ -140,16 +129,7 @@ void solve(uint64_t board, uint16_t avail) {
             uint16_t newavail = remove(avail, stickidx);
             solve(newboard, newavail);
         }
-    }
-    for(uint8_t stickidx = 1; stickidx <= 19; stickidx++) {
-        uint16_t psa = (stickidx + 1) / 2;
 
-        uint16_t stickmask = 1u << psa;
-        if(!(avail & stickmask)) {
-            continue;
-        }
-
-        uint8_t v = s2v[stickidx];
         for(int y = 0; y < 5; y++) {
             if(board_get_row(board, y) != 0) {
                 continue;
@@ -227,28 +207,13 @@ int main(int argv, char **argc) {
         auto b = names[i*2+1] - 'A' + 1;
         s2v[b] = v;
         s2v[a] = rev(v);
-
-        /*
-        auto transpose = [](uint64_t x) {
-            return
-                (x & 1) << (0 * 5 - 0)|
-                (x & 2) << (1 * 5 - 1) |
-                (x & 4) << (2 * 5 - 2) |
-                (x & 8) << (3 * 5 - 3) |
-                (x & 16) << (4 * 5 - 4);
-        };
-        s2tv[b] = transpose(v);
-        s2tv[a] = transpose(rev(v));
-        */
     }
 
     uint8_t rows[5];
     uint8_t cols[5];
     getBoard(argv, argc, rows, cols);
 
-
     uint64_t board = 0;
-    //uint64_t setbits = 0;
     uint32_t avail = 0b11111111110;
     for(int i = 0; i < 5; i++) {
         board = board_set_row(board,i, rows[i]);
@@ -259,7 +224,6 @@ int main(int argv, char **argc) {
         board = board_set_col(board,i, cols[i]);
         avail = remove(avail, cols[i]);
     }
-
 
     solve(board, avail);
 
